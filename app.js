@@ -13,7 +13,7 @@ const async = require('async');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-const aboutContent = 'This is a payroll login hours tracker application';
+const aboutContent = 'This is a breakfast expense tracker application';
 const contactContent = 'Email: jainsanmati846@gmail.com';
 
 let nameUser = '';
@@ -63,10 +63,6 @@ const userSchema = mongoose.Schema({
     type: Date,
     default: Date.now(),
     select: false
-  },
-  isAdmin: {
-    type: Boolean,
-    default: false
   }
 });
 
@@ -107,16 +103,13 @@ passport.deserializeUser(function(id, done) {
 
 const Post = mongoose.model('post', postSchema);
 
+// ─── GET ROUTES ─────────────────────────────────────────────────────────────────
 app.get('/', function(req, res) {
   if (req.isAuthenticated()) {
     res.redirect('/logged');
   } else {
     res.render('login');
   }
-});
-
-app.get('/fail-attempt', function(req, res) {
-  res.render('fail-attempt');
 });
 
 app.get('/register', function(req, res) {
@@ -127,93 +120,49 @@ app.get('/register', function(req, res) {
   }
 });
 
-app.get('/delete', function(req, res) {
-  if (req.isAuthenticated()) {
-    User.findOne({ username: nameUser }).exec(function(err, doc) {
-      if (doc.isAdmin === true) {
-        Post.deleteMany({}, function(err) {
-          if (err) console.log(err);
-          res.redirect('/');
-        });
-      } else {
-        res.render('404');
-      }
-    });
-  } else {
-    res.redirect('/');
-  }
-});
-
-app.get('/deleteSpecific', function(req, res) {
-  if (req.isAuthenticated()) {
-    User.findOne({ username: nameUser }).exec(function(err, doc) {
-      if (doc.isAdmin === true) {
-        const l = req.originalUrl;
-        let from = l.substring(21, 31);
-        let to = l.substring(35, l.length);
-
-        Post.deleteMany({
-          createdAt: {
-            $gte: from,
-            $lte: to
-          }
-        }).exec(function(err, doc) {
-          res.redirect('/');
-        });
-      } else {
-        res.render('404');
-      }
-    });
-  } else {
-    res.redirect('/');
-  }
+app.get('/fail-attempt', function(req, res) {
+  res.render('fail-attempt');
 });
 
 app.get('/logged', function(req, res) {
   if (req.isAuthenticated()) {
-    User.findOne({ username: nameUser }).exec(function(err, doc) {
-      if (doc.isAdmin === true) {
-        Post.find().exec(function(err, doc) {
-          res.render('all-entries', {
-            finalDoc: doc,
-            username: nameUser
-          });
-        });
-      } else {
-        Post.find({ username: nameUser }).exec(function(err, doc) {
-          const finalDoc = doc;
+    Post.find({ username: nameUser }).exec(function(err, doc) {
+      const finalDoc = doc;
+      if (err) {
+        console.log(err);
+      } else if (Array.isArray(doc) && doc.length) {
+        const arr = doc[doc.length - 1];
+        Post.findById(arr._id, function(err, doc) {
           if (err) {
             console.log(err);
-          } else if (Array.isArray(doc) && doc.length) {
-            const arr = doc[doc.length - 1];
-            Post.findById(arr._id, function(err, doc) {
-              if (err) {
-                console.log(err);
-              } else if (doc.complete === true) {
-                res.render('loggedFull', {
-                  username: nameUser,
-                  finalDoc: finalDoc
-                });
-              } else {
-                res.render('logged', {
-                  username: nameUser,
-                  finalDoc: finalDoc
-                });
-              }
+          } else if (doc.complete === true) {
+            res.render('loggedFull', {
+              username: nameUser,
+              finalDoc: finalDoc
             });
           } else {
-            // array is empty
-            res.render('loggedFull', {
+            res.render('logged', {
               username: nameUser,
               finalDoc: finalDoc
             });
           }
         });
+      } else {
+        // array is empty
+        res.render('loggedFull', {
+          username: nameUser,
+          finalDoc: finalDoc
+        });
       }
     });
   } else {
     res.redirect('/');
   }
+});
+
+app.get('/logout', function(req, res) {
+  req.logout();
+  res.redirect('/');
 });
 
 app.get('/about', function(req, res) {
@@ -226,11 +175,6 @@ app.get('/contact', function(req, res) {
   res.render('contact', {
     contact: contactContent
   });
-});
-
-app.get('/logout', function(req, res) {
-  req.logout();
-  res.redirect('/');
 });
 
 app.get('/logEntry/:date', function(req, res) {
@@ -316,6 +260,95 @@ app.get('/logExit/:date', function(req, res) {
   }
 });
 
+app.get('/delete', function(req, res) {
+  if (req.isAuthenticated()) {
+    User.findOne({ username: nameUser }).exec(function(err, doc) {
+      if (doc.isAdmin === true) {
+        Post.deleteMany({}, function(err) {
+          if (err) console.log(err);
+          res.redirect('/');
+        });
+      } else {
+        res.render('404');
+      }
+    });
+  } else {
+    res.redirect('/');
+  }
+});
+
+app.get('/deleteSpecific', function(req, res) {
+  if (req.isAuthenticated()) {
+    User.findOne({ username: nameUser }).exec(function(err, doc) {
+      if (doc.isAdmin === true) {
+        const l = req.originalUrl;
+        let from = l.substring(21, 31);
+        let to = l.substring(35, l.length);
+
+        Post.deleteMany({
+          createdAt: {
+            $gte: from,
+            $lte: to
+          }
+        }).exec(function(err, doc) {
+          res.redirect('/');
+        });
+      } else {
+        res.render('404');
+      }
+    });
+  } else {
+    res.redirect('/');
+  }
+});
+
+// ─── POST ROUTES ────────────────────────────────────────────────────────────────
+app.post('/', function(req, res) {
+  const user = new User({
+    username: req.body.username,
+    password: req.body.password
+  });
+  User.find({ username: req.body.username }).exec(function(err, doc) {
+    if (Array.isArray(doc) && doc.length) {
+      req.login(user, function(err) {
+        if (err) {
+          console.log(err);
+        } else {
+          passport.authenticate('local', { failureRedirect: '/fail-attempt' })(
+            req,
+            res,
+            function() {
+              nameUser = req.body.username;
+              res.redirect('/logged');
+            }
+          );
+        }
+      });
+    } else {
+      res.render('not-found');
+    }
+  });
+});
+
+app.post('/register', function(req, res) {
+  User.register(
+    { username: req.body.username, email: req.body.email },
+    req.body.password,
+    function(err, user) {
+      if (err) {
+        console.log(err);
+
+        res.render('fail-register', {
+          message: err.message
+        });
+      } else {
+        res.render('success-register');
+      }
+    }
+  );
+});
+
+// ─── PASSWORD RECOVERY ──────────────────────────────────────────────────────────
 app.get('/pass-recovery', function(req, res) {
   res.render('forgot');
 });
@@ -467,60 +500,17 @@ app.post('/reset/:token', function(req, res) {
   );
 });
 
-app.post('/register', function(req, res) {
-  User.register(
-    { username: req.body.username, email: req.body.email },
-    req.body.password,
-    function(err, user) {
-      if (err) {
-        console.log(err);
-
-        res.render('fail-register', {
-          message: err.message
-        });
-      } else {
-        res.render('success-register');
-      }
-    }
-  );
-});
-
-app.post('/', function(req, res) {
-  const user = new User({
-    username: req.body.username,
-    password: req.body.password
-  });
-  User.find({ username: req.body.username }).exec(function(err, doc) {
-    if (Array.isArray(doc) && doc.length) {
-      req.login(user, function(err) {
-        if (err) {
-          console.log(err);
-        } else {
-          passport.authenticate('local', { failureRedirect: '/fail-attempt' })(
-            req,
-            res,
-            function() {
-              nameUser = req.body.username;
-              res.redirect('/logged');
-            }
-          );
-        }
-      });
-    } else {
-      res.render('not-found');
-    }
-  });
-});
-
+// ─── ERROR PAGE ─────────────────────────────────────────────────────────────────
 app.all('*', (req, res) => {
   res.render('404');
 });
 
+// ─── SERVER ─────────────────────────────────────────────────────────────────────
 let port = process.env.PORT;
 if (port == null || port == '') {
   port = 3000;
 }
 
 app.listen(port, function() {
-  console.log('Server started');
+  console.log(`Server started at ${port}`);
 });
