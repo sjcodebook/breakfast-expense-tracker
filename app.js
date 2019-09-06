@@ -173,15 +173,9 @@ app.get('/contact', function(req, res) {
 
 app.get('/delete', function(req, res) {
   if (req.isAuthenticated()) {
-    User.findOne({ username: nameUser }).exec(function(err, doc) {
-      if (doc.isAdmin === true) {
-        Post.deleteMany({}, function(err) {
-          if (err) console.log(err);
-          res.redirect('/');
-        });
-      } else {
-        res.render('404');
-      }
+    Post.deleteMany({ username: nameUser }, function(err) {
+      if (err) console.log(err);
+      res.redirect('/');
     });
   } else {
     res.redirect('/');
@@ -190,23 +184,18 @@ app.get('/delete', function(req, res) {
 
 app.get('/deleteSpecific', function(req, res) {
   if (req.isAuthenticated()) {
-    User.findOne({ username: nameUser }).exec(function(err, doc) {
-      if (doc.isAdmin === true) {
-        const l = req.originalUrl;
-        let from = l.substring(21, 31);
-        let to = l.substring(35, l.length);
+    const l = req.originalUrl;
+    let from = l.substring(21, 31);
+    let to = l.substring(35, l.length);
 
-        Post.deleteMany({
-          createdAt: {
-            $gte: from,
-            $lte: to
-          }
-        }).exec(function(err, doc) {
-          res.redirect('/');
-        });
-      } else {
-        res.render('404');
+    Post.deleteMany({
+      username: nameUser,
+      createdAt: {
+        $gte: from,
+        $lte: to
       }
+    }).exec(function(err, doc) {
+      res.redirect('/');
     });
   } else {
     res.redirect('/');
