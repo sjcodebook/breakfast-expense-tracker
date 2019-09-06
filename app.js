@@ -132,14 +132,10 @@ app.get('/logged', function(req, res) {
         Post.findById(arr._id, function(err, doc) {
           if (err) {
             console.log(err);
-          } else if (doc.complete === true) {
+          } else {
             res.render('loggedFull', {
               username: nameUser,
-              finalDoc: finalDoc
-            });
-          } else {
-            res.render('logged', {
-              username: nameUser,
+              prevBal: doc.prevBal,
               finalDoc: finalDoc
             });
           }
@@ -148,6 +144,7 @@ app.get('/logged', function(req, res) {
         // array is empty
         res.render('loggedFull', {
           username: nameUser,
+          prevBal: 0,
           finalDoc: finalDoc
         });
       }
@@ -172,89 +169,6 @@ app.get('/contact', function(req, res) {
   res.render('contact', {
     contact: contactContent
   });
-});
-
-app.get('/logEntry/:date', function(req, res) {
-  if (req.isAuthenticated()) {
-    const now = req.params.date;
-    const nowDayTime = now.substring(0, 25);
-    const timeZone = now.substring(25, now.length);
-    const rawNow = Date.now();
-    const post = new Post({
-      username: nameUser,
-      entryDayTime: nowDayTime,
-      entryTimeZone: timeZone,
-      rawEntry: rawNow,
-      complete: false
-    });
-    post.save(function(err) {
-      if (err) {
-        console.log(err);
-      }
-      res.redirect('/logged');
-    });
-  } else {
-    res.redirect('/');
-  }
-});
-
-app.get('/logExit/:date', function(req, res) {
-  if (req.isAuthenticated()) {
-    const now = req.params.date;
-    const nowDayTime = now.substring(0, 25);
-    const timeZone = now.substring(25, now.length);
-    const rawNow = Date.now();
-
-    function convertMS(milliseconds) {
-      var day, hour, minute, seconds;
-      seconds = Math.floor(milliseconds / 1000);
-      minute = Math.floor(seconds / 60);
-      seconds = seconds % 60;
-      hour = Math.floor(minute / 60);
-      minute = minute % 60;
-      day = Math.floor(hour / 24);
-      hour = hour % 24;
-      function pad(n) {
-        return n < 10 ? '0' + n : n;
-      }
-
-      return {
-        day: pad(day),
-        hour: pad(hour),
-        minute: pad(minute),
-        seconds: pad(seconds)
-      };
-    }
-
-    Post.find({ username: nameUser }).exec(function(err, doc) {
-      if (err) {
-        console.log(err);
-      }
-      const obj = doc[doc.length - 1];
-      let dur = convertMS(rawNow - obj.rawEntry);
-      const timeStr = dur.hour + ':' + dur.minute + ':' + dur.seconds;
-
-      Post.findOneAndUpdate(
-        { _id: obj._id },
-        {
-          $set: {
-            exitDayTime: nowDayTime,
-            rawExit: rawNow,
-            complete: true,
-            duration: timeStr
-          }
-        },
-        { new: true } // return updated post
-      ).exec(function(err, post) {
-        if (err) {
-          console.log(err);
-        }
-        res.redirect('/');
-      });
-    });
-  } else {
-    res.redirect('/');
-  }
 });
 
 app.get('/delete', function(req, res) {
@@ -325,6 +239,26 @@ app.post('/', function(req, res) {
       res.render('not-found');
     }
   });
+});
+
+app.post('/logged', function(req, res) {
+  if (req.isAuthenticated()) {
+    const post = new Post({
+      username: nameUser,
+      tea: req.body.tea,
+      biscuits: req.body.biscuits,
+      mathri: req.body.mathri,
+      prevBal: req.body.prevBal
+    });
+    post.save(function(err) {
+      if (err) {
+        console.log(err);
+      }
+      res.redirect('/logged');
+    });
+  } else {
+    res.redirect('/');
+  }
 });
 
 app.post('/register', function(req, res) {

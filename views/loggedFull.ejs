@@ -102,35 +102,6 @@
             </form>
           </div>
         </div>
-
-        <div class="btn-group">
-          <button
-            class="btn btn-outline-warning btn-lg allEntryBtn dropdown-toggle"
-            type="button"
-            data-toggle="dropdown"
-            aria-haspopup="true"
-            aria-expanded="false"
-          >
-            FIND ENTRIES BY DATE
-          </button>
-          <div class="dropdown-menu">
-            <form action="/deleteSpecific">
-              <div class="form-group">
-                <label for="from"><span class="dateText"> FROM </span></label>
-                <input type="date" class="form-control" name="from" required />
-              </div>
-
-              <div class="form-group">
-                <label for="to"><span class="dateText"> TO </span></label>
-                <input type="date" class="form-control" name="to" required />
-              </div>
-
-              <button class="btn btn-outline-warning btn-block" type="submit">
-                FIND
-              </button>
-            </form>
-          </div>
-        </div>
       </div>
 
       <div class="card text-center">
@@ -138,15 +109,16 @@
           Today's Entry
         </div>
         <div class="card-body text-center">
-          <form action="/" method="POST" class="form-inline">
+          <form action="/logged" method="POST" class="form-inline">
             <div class="col-md-3 mb-3">
-              <label for="Tea">Tea</label>
+              <label for="tea">Tea</label>
               <input
                 type="number"
-                id="Tea"
-                name="Tea"
+                id="tea"
+                name="tea"
                 class="form-control"
                 value="0"
+                step="1"
                 onchange="calTotal()"
               />
             </div>
@@ -158,6 +130,7 @@
                 name="biscuits"
                 class="form-control"
                 value="0"
+                step="1"
                 onchange="calTotal()"
               />
             </div>
@@ -169,6 +142,7 @@
                 name="mathri"
                 class="form-control"
                 value="0"
+                step="1"
                 onchange="calTotal()"
               />
             </div>
@@ -180,7 +154,7 @@
                 id="prevBal"
                 name="prevBal"
                 class="form-control"
-                value="0"
+                value="<%= prevBal %>"
                 step="1"
                 onchange="calTotal()"
               />
@@ -192,18 +166,51 @@
           </form>
         </div>
         <div class="card-footer text-danger display-4 text-center">
-          Total: Rs <span id="total">0</span>
+          Total: Rs <span id="total"><%= prevBal %></span>
         </div>
       </div>
       <br />
+      <h4 class="greeting">All Entries (From New -> Old)</h4>
+      <br />
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col" class="entries">Date</th>
+            <th scope="col" class="entries">Tea</th>
+            <th scope="col" class="entries">Biscuits</th>
+            <th scope="col" class="entries">Mathri</th>
+            <th scope="col" class="entries">Previous Balance</th>
+            <th scope="col" class="entries">Total</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% for(let i = (finalDoc.length-1); i>=0;i--) { %>
+          <tr>
+            <td class="entries">
+              <%= finalDoc[i].createdAt.toString().substring(0,16) %>
+            </td>
+            <td class="entries"><%= finalDoc[i].tea %></td>
+            <td class="entries"><%= finalDoc[i].biscuits %></td>
+            <td class="entries"><%= finalDoc[i].mathri %></td>
+            <td class="entries"><%= finalDoc[i].prevBal %></td>
+            <td class="entries">
+              <%=
+              (finalDoc[i].tea*10)+(finalDoc[i].biscuits*5)+(finalDoc[i].mathri*2)+finalDoc[i].prevBal
+              %>
+            </td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
     </div>
 
     <script>
       function calTotal() {
         let total =
-          parseInt(document.getElementById('Tea').value * 10) +
-          parseInt(document.getElementById('biscuits').value * 5) +
-          parseInt(document.getElementById('mathri').value * 2) +
+          parseInt(document.getElementById('tea').value) * 10 +
+          parseInt(document.getElementById('biscuits').value) * 5 +
+          parseInt(document.getElementById('mathri').value) * 2 +
           parseInt(document.getElementById('prevBal').value);
 
         document.getElementById('total').innerText = total;
