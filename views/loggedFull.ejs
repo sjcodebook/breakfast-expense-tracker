@@ -62,22 +62,21 @@
       <a class="btn btn-outline-primary" href="/logout">SIGNOUT</a>
     </div>
 
-    <div class="container content">
-      <div class="container">
-        <h4 class="greeting">Howdy, <%= username %></h4>
-        <br />
-        <h4 class="greeting"><%= Date().substring(0, 15) %></h4>
-
+    <div class="container border rounded-sm p-3">
+      <h4 class="greeting">Howdy, <%= username %></h4>
+      <br />
+      <h4 class="greeting"><%= Date().substring(0, 15) %></h4>
+      <div>
         <button
           onclick="deleteAll()"
-          class="btn btn-outline-danger btn-lg allEntryBtn"
+          class="btn btn-outline-danger btn-lg allEntryBtn col-md-4"
         >
           DELETE ALL ENTRIES
         </button>
 
         <div class="btn-group">
           <button
-            class="btn btn-outline-danger btn-lg dropdown-toggle"
+            class="btn btn-outline-danger btn-lg allEntryBtn dropdown-toggle"
             type="button"
             data-toggle="dropdown"
             aria-haspopup="true"
@@ -104,36 +103,111 @@
           </div>
         </div>
 
-        <h4 class="greeting">All Entries (From New -> Old)</h4>
-        <br />
-      </div>
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col" class="entries">Username</th>
-            <th scope="col" class="entries">Logged In (Date, Time)</th>
-            <th scope="col" class="entries">Logged Out (Date, Time)</th>
-            <th scope="col" class="entries">Duration (hh:mm:ss)</th>
-            <th scope="col" class="entries">Timezone</th>
-          </tr>
-        </thead>
+        <div class="btn-group">
+          <button
+            class="btn btn-outline-warning btn-lg allEntryBtn dropdown-toggle"
+            type="button"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            FIND ENTRIES BY DATE
+          </button>
+          <div class="dropdown-menu">
+            <form action="/deleteSpecific">
+              <div class="form-group">
+                <label for="from"><span class="dateText"> FROM </span></label>
+                <input type="date" class="form-control" name="from" required />
+              </div>
 
-        <tbody>
-          <% for(let i = (finalDoc.length-1); i>=0;i--) { %>
-          <tr>
-            <td class="entries"><%= finalDoc[i].username %></td>
-            <td class="entries"><%= finalDoc[i].entryDayTime %></td>
-            <td class="entries"><%= finalDoc[i].exitDayTime %></td>
-            <td class="entries"><%= finalDoc[i].duration %></td>
-            <td class="entries"><%= finalDoc[i].entryTimeZone %></td>
-          </tr>
-          <% } %>
-        </tbody>
-      </table>
+              <div class="form-group">
+                <label for="to"><span class="dateText"> TO </span></label>
+                <input type="date" class="form-control" name="to" required />
+              </div>
+
+              <button class="btn btn-outline-warning btn-block" type="submit">
+                FIND
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="card text-center">
+        <div class="card-header ">
+          Today's Entry
+        </div>
+        <div class="card-body text-center">
+          <form action="/" method="POST" class="form-inline">
+            <div class="col-md-3 mb-3">
+              <label for="Tea">Tea</label>
+              <input
+                type="number"
+                id="Tea"
+                name="Tea"
+                class="form-control"
+                value="0"
+                onchange="calTotal()"
+              />
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="biscuits">Biscuits</label>
+              <input
+                type="number"
+                id="biscuits"
+                name="biscuits"
+                class="form-control"
+                value="0"
+                onchange="calTotal()"
+              />
+            </div>
+            <div class="col-md-3 mb-3">
+              <label for="mathri">Mathri</label>
+              <input
+                type="number"
+                id="mathri"
+                name="mathri"
+                class="form-control"
+                value="0"
+                onchange="calTotal()"
+              />
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <label for="prevBal">Previous Balance</label>
+              <input
+                type="number"
+                id="prevBal"
+                name="prevBal"
+                class="form-control"
+                value="0"
+                step="1"
+                onchange="calTotal()"
+              />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              Submit
+            </button>
+          </form>
+        </div>
+        <div class="card-footer text-danger display-4 text-center">
+          Total: Rs <span id="total">0</span>
+        </div>
+      </div>
+      <br />
     </div>
 
     <script>
-      function TodayDate() {}
+      function calTotal() {
+        let total =
+          parseInt(document.getElementById('Tea').value * 10) +
+          parseInt(document.getElementById('biscuits').value * 5) +
+          parseInt(document.getElementById('mathri').value * 2) +
+          parseInt(document.getElementById('prevBal').value);
+
+        document.getElementById('total').innerText = total;
+      }
     </script>
     <%- include("partials/footer"); -%>
   </body>

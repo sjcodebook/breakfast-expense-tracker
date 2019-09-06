@@ -68,13 +68,10 @@ const userSchema = mongoose.Schema({
 
 const postSchema = {
   username: String,
-  entryDayTime: String,
-  entryTimeZone: String,
-  rawEntry: Number,
-  exitDayTime: String,
-  rawExit: Number,
-  duration: String,
-  complete: Boolean,
+  tea: Number,
+  biscuits: Number,
+  mathri: Number,
+  prevBal: Number,
   createdAt: {
     type: Date,
     default: new Date()
