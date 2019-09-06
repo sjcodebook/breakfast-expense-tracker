@@ -111,7 +111,7 @@
         <div class="card-body text-center">
           <form action="/logged" method="POST" class="form-inline">
             <div class="col-md-3 mb-3">
-              <label for="tea">Tea</label>
+              <label for="tea">Tea (cups * Rs 10)</label>
               <input
                 type="number"
                 id="tea"
@@ -119,11 +119,12 @@
                 class="form-control"
                 value="0"
                 step="1"
+                min="0"
                 onchange="calTotal()"
               />
             </div>
             <div class="col-md-3 mb-3">
-              <label for="biscuits">Biscuits</label>
+              <label for="biscuits">Biscuits (packs * Rs 5)</label>
               <input
                 type="number"
                 id="biscuits"
@@ -131,11 +132,12 @@
                 class="form-control"
                 value="0"
                 step="1"
+                min="0"
                 onchange="calTotal()"
               />
             </div>
             <div class="col-md-3 mb-3">
-              <label for="mathri">Mathri</label>
+              <label for="mathri">Mathri (piece * Rs 2)</label>
               <input
                 type="number"
                 id="mathri"
@@ -143,30 +145,33 @@
                 class="form-control"
                 value="0"
                 step="1"
+                min="0"
                 onchange="calTotal()"
               />
             </div>
 
             <div class="col-md-3 mb-3">
-              <label for="prevBal">Previous Balance</label>
+              <label for="prevBal">Previous Balance (Rs)</label>
               <input
                 type="number"
                 id="prevBal"
                 name="prevBal"
                 class="form-control"
-                value="<%= prevBal %>"
+                value="<%= totalBal %>"
                 step="1"
+                min="0"
                 onchange="calTotal()"
               />
             </div>
+            <input type="hidden" id="totalBal" name="totalBal" value="0" />
 
             <button type="submit" class="btn btn-primary btn-block">
-              Submit
+              Create Entry
             </button>
           </form>
         </div>
         <div class="card-footer text-danger display-4 text-center">
-          Total: Rs <span id="total"><%= prevBal %></span>
+          Today's Total: Rs <span id="total"><%= totalBal %></span>
         </div>
       </div>
       <br />
@@ -176,11 +181,11 @@
         <thead>
           <tr>
             <th scope="col" class="entries">Date</th>
-            <th scope="col" class="entries">Tea</th>
-            <th scope="col" class="entries">Biscuits</th>
-            <th scope="col" class="entries">Mathri</th>
-            <th scope="col" class="entries">Previous Balance</th>
-            <th scope="col" class="entries">Total</th>
+            <th scope="col" class="entries">Tea (cups * Rs 10)</th>
+            <th scope="col" class="entries">Biscuits (packs * Rs 5)</th>
+            <th scope="col" class="entries">Mathri (piece * Rs 2)</th>
+            <th scope="col" class="entries">Previous Balance (Rs)</th>
+            <th scope="col" class="entries">Total (Rs)</th>
           </tr>
         </thead>
 
@@ -214,6 +219,7 @@
           parseInt(document.getElementById('prevBal').value);
 
         document.getElementById('total').innerText = total;
+        document.getElementById('totalBal').value = total;
       }
 
       function deleteAll() {

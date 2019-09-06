@@ -72,6 +72,7 @@ const postSchema = {
   biscuits: Number,
   mathri: Number,
   prevBal: Number,
+  totalBal: Number,
   createdAt: {
     type: Date,
     default: new Date()
@@ -136,6 +137,7 @@ app.get('/logged', function(req, res) {
             res.render('loggedFull', {
               username: nameUser,
               prevBal: doc.prevBal,
+              totalBal: doc.totalBal,
               finalDoc: finalDoc
             });
           }
@@ -145,6 +147,7 @@ app.get('/logged', function(req, res) {
         res.render('loggedFull', {
           username: nameUser,
           prevBal: 0,
+          totalBal: 0,
           finalDoc: finalDoc
         });
       }
@@ -237,7 +240,8 @@ app.post('/logged', function(req, res) {
       tea: req.body.tea,
       biscuits: req.body.biscuits,
       mathri: req.body.mathri,
-      prevBal: req.body.prevBal
+      prevBal: req.body.prevBal,
+      totalBal: req.body.totalBal
     });
     post.save(function(err) {
       if (err) {
